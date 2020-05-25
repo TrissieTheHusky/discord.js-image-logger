@@ -17,20 +17,20 @@ module.exports = (client, options) => {
     console.log(`-----------------------------\nDiscord Image Logger Online\n-----------------------------`);
   });
 
-  client.on("message", (msg) => {
-    if (msg.author.bot || !msg.guild || !msg.attachments) return;
-    var a = msg.attachments;
+  client.on("message", () => {
+    if (message.author.bot || !message.guild || !message.attachments) return;
+    var a = message.attachments;
     var attachments = [];
     a.forEach(e => {
       if (DIL.isImage(e.filename)) attachments.push(e);
     });
     if (attachments.length <= 0) return;
 
-    if (!DIL.channels.includes(msg.channel.id) && !DIL.channels.includes(msg.channel.name) && !DIL.serverWide) return;
+    if (!DIL.channels.includes(message.guild.channel.cache.id) && !DIL.channels.includes(message.guild.channel.cache.name) && !DIL.serverWide) return;
 
-    const logchan = msg.guild.channels.has(DIL.logChannel) ? msg.guild.channels.get(DIL.logChannel) : msg.guild.channels.find(c => c.name.toLowerCase() == DIL.logChannel.toLowerCase());
+    const logchan = msg.guild.channels.cache.has(DIL.logChannel) ? msg.guild.channels.cache.get(DIL.logChannel) : message.guild.channels.cache.find(c => c.name.toLowerCase() == DIL.logChannel.toLowerCase());
     if (!logchan) {
-      if (DIL.logging) console.log(`[IMG_LOGGER] Couldn't find a logging channel for ${msg.guild.name} (${msg.guild.id})`);
+      if (DIL.logging) console.log(`[IMG_LOGGER] Couldn't find a logging channel for ${message.guild.name} (${message.guild.id})`);
       return;
     };
 
@@ -41,12 +41,12 @@ module.exports = (client, options) => {
         index++;
         links.push(`**${index})** \`${e.url}\``);
       });
-      logchan.send(`__New Image(s) Uploaded In #${msg.channel.name}__\nUser: ${msg.author}\n${links.join("\n")}`).catch(console.log);
+      logchan.send(`__New Image(s) Uploaded In #${message.channel.cache.name}__\nUser: ${message.author}\n${links.join("\n")}`).catch(console.log);
     } else if (DIL.method === "embed") {
       const embed = new Discord.RichEmbed();
-      embed.setAuthor(msg.author.username, msg.author.displayAvatarURL);
-      if (attachments.length == 1) embed.setFooter(`New Upload: #${msg.channel.name}`);
-      if (attachments.length > 1) embed.setFooter(`New Uploads: #${msg.channel.name}`);
+      embed.setAuthor(message.author.username, message.author.displayAvatarURL);
+      if (attachments.length == 1) embed.setFooter(`New Upload: #${message.channel.cache.name}`);
+      if (attachments.length > 1) embed.setFooter(`New Uploads: #${message.channel.cache.name}`);
       embed.setImage(attachments[0].url);
       attachments.forEach(at => {
         embed.addField(at.filename, at.url);
@@ -62,10 +62,10 @@ module.exports = (client, options) => {
         links.push(`e.url`);
       });
       try {
-        logChannel.send(`${attachments.length} Image(s) Send In #${message.channel.id} by <@${message.author.id}>`,{files: links})
+        logChannel.send(`${attachments.length} Image(s) Send In #${message.guild.channel.cache.id} by <@${message.author.id}>`,{files: links})
       } catch (e) {
         try {
-          logChannel.send(`\`Failed Upload Attempt - File Size Too Big?\`\n${attachments.size} Image(s) Send In #${message.channel.id} by <@${message.author.id}>\n\`\`\`\n${links}\n\`\`\``)
+          logChannel.send(`\`Failed Upload Attempt - File Size Too Big?\`\n${attachments.size} Image(s) Send In #${message.guild.channel.id} by <@${message.author.id}>\n\`\`\`\n${links}\n\`\`\``)
         } catch (e) {
           console.error(e);
         };
